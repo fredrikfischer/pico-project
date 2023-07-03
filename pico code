@@ -8,14 +8,14 @@ import urequests
 import umqtt.robust as mqtt
 
 # Wifi config
-ssid = "Skurken"
-password = "Dietik+Yogi+Urvriden+71"
+ssid = "MYWIFI"
+password = "MYPASSWORD"
 
 # Adafruit MQTT config
 adafruit_mqtt_host = "io.adafruit.com"
 adafruit_mqtt_port = 1883
 adafruit_username = "firreb"
-adafruit_key = "aio_rFno32L1UfpwK8VcRhdmevNkVXvl"
+adafruit_key = "MYKEY"
 
 # Adafruit API config
 temperature_threshold_api_url_name = "https://io.adafruit.com/api/v2/firreb/feeds/temperature-threshold"
