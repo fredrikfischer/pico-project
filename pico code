@@ -7,19 +7,20 @@ import ujson
 import urequests
 import umqtt.robust as mqtt
 
-# Fill in your network name (SSID) and password here:
-ssid = "MYWIFI"
-password = "MYPASSWORD"
+# Wifi config
+ssid = "Skurken"
+password = "Dietik+Yogi+Urvriden+71"
 
-# Adafruit MQTT configuration
+# Adafruit MQTT config
 adafruit_mqtt_host = "io.adafruit.com"
 adafruit_mqtt_port = 1883
 adafruit_username = "firreb"
-adafruit_key = "MYKEY"
+adafruit_key = "aio_rFno32L1UfpwK8VcRhdmevNkVXvl"
 
+# Adafruit API config
+temperature_threshold_api_url_name = "https://io.adafruit.com/api/v2/firreb/feeds/temperature-threshold"
 
-def connect_wifi():
-    # Connect to WLAN
+def connect_wifi(): 
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(ssid, password)
@@ -27,6 +28,24 @@ def connect_wifi():
         print('Waiting for connection...')
         time.sleep(1)
     print(wlan.ifconfig())
+    
+    
+def send_adafruit_mqtt_data(feed_name, value):
+    client = mqtt.MQTTClient("pico", adafruit_mqtt_host, port=adafruit_mqtt_port, user=adafruit_username, password=adafruit_key, ssl=False)
+    client.connect()
+    topic = "{}/feeds/{}/json".format(adafruit_username, feed_name)
+    payload = ujson.dumps({"value": value})
+    client.publish(topic, payload)
+    client.disconnect()
+    print("Data sent to Adafruit MQTT")
+     
+     
+def get_temperature_threshold():
+    api_url = temperature_threshold_api_url
+    headers = {"X-AIO-Key": adafruit_key}
+    response = urequests.get(api_url, headers=headers)
+    data = ujson.loads(response.text)
+    return int(data["last_value"])
 
 try:
     connect_wifi()
@@ -35,32 +54,15 @@ except KeyboardInterrupt:
 
 relay_pin = Pin(16, Pin.OUT)
 sensor = dht.DHT11(Pin(15))
-
-def send_adafruit_mqtt_data(feed_name, value):
-    client = mqtt.MQTTClient("pico", adafruit_mqtt_host, port=adafruit_mqtt_port,
-                            user=adafruit_username, password=adafruit_key, ssl=False)
-    client.connect()
-
-    topic = "{}/feeds/{}/json".format(adafruit_username, feed_name)
-    payload = ujson.dumps({"value": value})
-    client.publish(topic, payload)
-
-    client.disconnect()
-    print("Data sent to Adafruit MQTT")
-       
-def get_temperature_threshold():
-    api_url = "https://io.adafruit.com/api/v2/firreb/feeds/temperature-threshold"
-    headers = {"X-AIO-Key": adafruit_key}
-    response = urequests.get(api_url, headers=headers)
-    data = ujson.loads(response.text)
-    return int(data["last_value"])
     
 while True:    
     sensor.measure()
     temp = sensor.temperature()
     humidity = sensor.humidity()
-
     temperature_threshold_value = get_temperature_threshold()
+    
+    print("Humidity : " + str(humidity))
+    print("Temperature : " + str(temp))
     print("Temperature threshold value: " + str(temperature_threshold_value))
     # Control relay based on Adafruit value
     if temperature_threshold_value < temp:
@@ -72,6 +74,5 @@ while True:
     
     send_adafruit_mqtt_data("humidity-feed", humidity)
     send_adafruit_mqtt_data("temperature-feed", temp)
-
-    time.sleep(10)  # Delay for 1 second before the next iteration
+    time.sleep(10)  
 
