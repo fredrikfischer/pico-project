@@ -14,7 +14,7 @@ password = "MYPASSWORD"
 # Adafruit MQTT config
 adafruit_mqtt_host = "io.adafruit.com"
 adafruit_mqtt_port = 1883
-adafruit_username = "firreb"
+adafruit_username = "MYUSERNAME"
 adafruit_key = "MYKEY"
 
 # Adafruit API config
